@@ -21,7 +21,7 @@ PRIMARY KEY (id_query_table),
 FOREIGN KEY (id_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
 );
 
--- adriano pinheiro
+-- adriano 
 
 /*DROP SCHEMA fipe_scraping;
 DROP TABLE vehicle_table;
