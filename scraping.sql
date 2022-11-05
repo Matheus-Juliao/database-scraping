@@ -16,9 +16,9 @@ CREATE TABLE query_table(
 	authentication TEXT,
 	consultation_date VARCHAR(50),
 	average_price VARCHAR (20),
-	fk_vehicle_table VARCHAR(12) NOT NULL,
+	fk_id_vehicle_table VARCHAR(12) NOT NULL,
 	PRIMARY KEY (id_query_table),
-	FOREIGN KEY (fk_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
+	FOREIGN KEY (fk_id_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
 );
 
 CREATE TABLE cod_vehicle_table(
@@ -27,19 +27,22 @@ CREATE TABLE cod_vehicle_table(
 	cod_model VARCHAR(12) NOT NULL ,
 	cod_model_year VARCHAR(12) NOT NULL ,
 	cod_reference_month VARCHAR(12) NOT NULL,
-    fk_cod_vehicle_table VARCHAR(12) NOT NULL,
+    fk_id_vehicle_table VARCHAR(12) NOT NULL,
 	PRIMARY KEY (id_cod_vehicle_table),
-	FOREIGN KEY (fk_cod_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
+	FOREIGN KEY (fk_id_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
 );
 
+-- REVISADO
 /*DROP SCHEMA fipe_scraping;
 DROP TABLE cod_vehicle_table;
 DROP TABLE query_table;
-DROP TABLE vehicle_table;*/
+DROP TABLE vehicle_table;
 
 INSERT INTO vehicle_table(id_vehicle_table, brand, model, model_year) VALUES ("1", 'GM - Chevrolet','ONIX HATCH LT 1.4 8V FlexPower 5p Mec.', '2015 Gasolina');
-INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_vehicle_table) VALUES ( "0940534" , 'outubro de 2022', 'wtktdjmyqmvt', 'sábado, 29 de outubro de 2022 12:38','R$ 46.247,00', "1");
-INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_cod_vehicle_table) VALUES ("23", "7691", "2019-1", "290", "1");
+INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) VALUES ( "0940534" , 'outubro de 2022', 'wtktdjmyqmvt', 'sábado, 29 de outubro de 2022 12:38','R$ 46.247,00', "1");
+INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table) VALUES ("23", "7691", "2019-1", "290", "1");
+
+DELETE FROM vehicle_table WHERE id_vehicle_table = '1';
 
 SELECT * FROM vehicle_table;
 SELECT * FROM query_table;
@@ -49,10 +52,19 @@ SELECT reference_month,
 	fipe_code, brand, model, 
     model_year, authentication, 
     consultation_date  FROM vehicle_table 
-    INNER JOIN query_table ON query_table.fk_vehicle_table = "1";
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = "1";
+    
+    SELECT reference_month, 
+	fipe_code, brand, model, 
+    model_year, authentication, 
+    consultation_date  FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table
+    WHERE cod_vehicle_table.cod_reference_month = "290";
+*/
 
-/*
-SELECT vehicle_table.brand, 
+-- REVISAR
+/*SELECT vehicle_table.brand, 
 	vehicle_table.model, 
 	vehicle_table.model_year, 
 	query_table.reference_month FROM vehicle_table 
