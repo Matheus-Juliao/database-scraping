@@ -32,21 +32,69 @@ CREATE TABLE cod_vehicle_table(
 	FOREIGN KEY (fk_id_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
 );
 
+CREATE TABLE period(
+	Codigo VARCHAR(12) NOT NULL,
+    Mes VARCHAR(50),
+    seq INT,
+	PRIMARY KEY (Codigo)
+);
+
+CREATE TABLE brands(
+	id_value INT AUTO_INCREMENT NOT NULL,
+	Value VARCHAR(12) NOT NULL,
+    Label VARCHAR(50),
+	PRIMARY KEY (id_value),
+	fk_id_Value VARCHAR(12) NOT NULL,
+	FOREIGN KEY (fk_id_Value) REFERENCES period (Codigo)
+);
+
+CREATE TABLE models(
+	id_value INT AUTO_INCREMENT NOT NULL,
+	Value VARCHAR(12) NOT NULL,
+    Label VARCHAR(50),
+	PRIMARY KEY (id_value),
+	fk_id_Value VARCHAR(12) NOT NULL,
+	FOREIGN KEY (fk_id_Value) REFERENCES brands (Value)
+);
+
+CREATE TABLE years(
+	id_value INT AUTO_INCREMENT NOT NULL,
+	Value VARCHAR(12) NOT NULL,
+    Label VARCHAR(50),
+	PRIMARY KEY (id_value),
+	fk_id_Value VARCHAR(12) NOT NULL,
+	FOREIGN KEY (fk_id_Value) REFERENCES models (Value)
+);
+
+INSERT INTO period (Codigo, Mes, seq) VALUES ('291','novembro/2022', 263);
+INSERT INTO brands (Value, Modelo, fk_id_Value, seq) VALUES ('1', 'Acura', '291', 1);
+INSERT INTO models (Value, Label, fk_id_Value, seq) VALUES ('1', 'Integra GS 1.8', '291', 1);
+INSERT INTO years (Value, Label, fk_id_Value, seq) VALUES ('1', '1998 Gasolina', '1998-1', 1);
+
 -- REVISADO
 /*DROP SCHEMA fipe_scraping;
 DROP TABLE cod_vehicle_table;
 DROP TABLE query_table;
 DROP TABLE vehicle_table;
+DROP TABLE years;
+DROP TABLE models;
+DROP TABLE brands;
+DROP TABLE period;
+DELETE FROM vehicle_table WHERE id_vehicle_table = '1';
 
 INSERT INTO vehicle_table(id_vehicle_table, brand, model, model_year) VALUES ("1", 'GM - Chevrolet','ONIX HATCH LT 1.4 8V FlexPower 5p Mec.', '2015 Gasolina');
 INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) VALUES ( "0940534" , 'outubro de 2022', 'wtktdjmyqmvt', 'sábado, 29 de outubro de 2022 12:38','R$ 46.247,00', "1");
 INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table) VALUES ("23", "7691", "2019-1", "290", "1");
 
-DELETE FROM vehicle_table WHERE id_vehicle_table = '1';
-
 SELECT * FROM vehicle_table;
 SELECT * FROM query_table;
 SELECT * FROM cod_vehicle_table;
+SELECT * FROM period;
+SELECT * FROM brands;
+SELECT * FROM models;
+SELECT * FROM years;
+SELECT id_code_period FROM period LIMIT 1;
+SELECT Value, Label FROM models where fk_id_Value = '291';
 	
 SELECT reference_month, 
 	fipe_code, brand, model, 
