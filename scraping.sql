@@ -63,6 +63,26 @@ CREATE TABLE years(
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
 	fk_id_Value INT NOT NULL,
+	FOREIGN KEY (fk_id_Value) REFERENCES brands (id_Value)
+);
+
+-- Cadastrar anos relacionados a um modelo pelo modelo
+CREATE TABLE modelYear(
+	id_Value INT AUTO_INCREMENT NOT NULL,
+	Value VARCHAR(12) NOT NULL,
+    Label VARCHAR(50) NOT NULL,
+	PRIMARY KEY (id_Value),
+	fk_id_Value INT NOT NULL,
+	FOREIGN KEY (fk_id_Value) REFERENCES models (id_Value)
+);
+
+-- Cadastrar anos relacionados a um modelo pelo ano
+CREATE TABLE yearModel(
+	id_Value INT AUTO_INCREMENT NOT NULL,
+	Value VARCHAR(12) NOT NULL,
+    Label VARCHAR(50) NOT NULL,
+	PRIMARY KEY (id_Value),
+	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES models (id_Value)
 );
 
@@ -72,6 +92,8 @@ DROP SCHEMA fipe_scraping;
 DROP TABLE cod_vehicle_table;
 DROP TABLE query_table;
 DROP TABLE vehicle_table;
+DROP TABLE yearModel;
+DROP TABLE modelYear;
 DROP TABLE years;
 DROP TABLE models;
 DROP TABLE brands;
@@ -85,6 +107,9 @@ INSERT INTO brands (Value, Label, fk_id_Value) VALUES ('1', 'Acura', '291');
 INSERT INTO models (Value, Label, fk_id_Value) VALUES ('1', 'Integra GS 1.8', 1);
 INSERT INTO models (Value, Label, fk_id_Value) VALUES ('2', 'Legend 3.2/3.5', 1);
 INSERT INTO years (Value, Label, fk_id_Value) VALUES ('1', '1998 Gasolina', 1);
+INSERT INTO modelYear (Value, Label, fk_id_Value) VALUES ('1992-1', '1998 Gasolina', 1);
+INSERT INTO modelYear (Value, Label, fk_id_Value) VALUES ('1991-1', '1991 Gasolina', 1);  
+INSERT INTO modelYear (Value, Label, fk_id_Value) VALUES ('1998-8', '1991 Gasolina', 1); 
 
 SELECT * FROM vehicle_table;
 SELECT * FROM query_table;
@@ -92,9 +117,24 @@ SELECT * FROM cod_vehicle_table;
 SELECT * FROM period;
 SELECT * FROM brands;
 SELECT * FROM models;
+
+SELECT id_Value FROM models WHERE Value = "1286";
+
+SELECT modelYear.Value, modelYear.Label FROM modelYear 
+INNER JOIN models ON models.id_Value = modelYear.fk_id_value 
+WHERE models.Value = "1286";
+
+
 SELECT * FROM years;
+SELECT * FROM modelYear;
+SELECT * FROM yearModel;
 SELECT id_code_period FROM period LIMIT 1;
-	
+SELECT Value, Label FROM models WHERE id_Value IN (SELECT fk_id_Value FROM modelYear where Value = '1998-1');
+
+SELECT models.Value, models.Label FROM models 
+	INNER JOIN modelYear ON modelYear.fk_id_Value = models.id_Value
+	WHERE modelYear.Value = '1998-1';          
+            
 SELECT reference_month, 
 	fipe_code, brand, model, 
     model_year, authentication, 
@@ -111,6 +151,10 @@ SELECT reference_month,
     
 SELECT models.Value, models.Label, years.Value, years.Label FROM models
 	INNER JOIN years WHERE years.fk_id_Value = 1;
+    
+SELECT models.Value, models.Label FROM models 
+	INNER JOIN yearModel ON yearModel.fk_id_Value = models.id_Value 
+	WHERE yearModel.Value
 */
 
 -- REVISAR
