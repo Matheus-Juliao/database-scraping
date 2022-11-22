@@ -83,7 +83,7 @@ CREATE TABLE yearModel(
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
 	fk_id_Value INT NOT NULL,
-	FOREIGN KEY (fk_id_Value) REFERENCES models (id_Value)
+	FOREIGN KEY (fk_id_Value) REFERENCES years (id_Value)
 );
 
 -- REVISADO
@@ -118,43 +118,12 @@ SELECT * FROM period;
 SELECT * FROM brands;
 SELECT * FROM models;
 
-SELECT id_Value FROM models WHERE Value = "1286";
-
-SELECT modelYear.Value, modelYear.Label FROM modelYear 
-INNER JOIN models ON models.id_Value = modelYear.fk_id_value 
-WHERE models.Value = "1286";
-
+SELECT id_Value FROM years WHERE Value = '1992-1' AND fk_id_Value = '146';
 
 SELECT * FROM years;
 SELECT * FROM modelYear;
 SELECT * FROM yearModel;
-SELECT id_code_period FROM period LIMIT 1;
-SELECT Value, Label FROM models WHERE id_Value IN (SELECT fk_id_Value FROM modelYear where Value = '1998-1');
-
-SELECT models.Value, models.Label FROM models 
-	INNER JOIN modelYear ON modelYear.fk_id_Value = models.id_Value
-	WHERE modelYear.Value = '1998-1';          
-            
-SELECT reference_month, 
-	fipe_code, brand, model, 
-    model_year, authentication, 
-    consultation_date  FROM vehicle_table 
-    INNER JOIN query_table ON query_table.fk_id_vehicle_table = "1";
-    
-SELECT reference_month, 
-	fipe_code, brand, model, 
-    model_year, authentication, 
-    consultation_date  FROM vehicle_table 
-    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table
-    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table
-    WHERE cod_vehicle_table.cod_reference_month = "290";
-    
-SELECT models.Value, models.Label, years.Value, years.Label FROM models
-	INNER JOIN years WHERE years.fk_id_Value = 1;
-    
-SELECT models.Value, models.Label FROM models 
-	INNER JOIN yearModel ON yearModel.fk_id_Value = models.id_Value 
-	WHERE yearModel.Value
+SELECT Codigo FROM period LIMIT 1;
 */
 
 -- REVISAR
