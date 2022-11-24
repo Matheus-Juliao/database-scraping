@@ -39,11 +39,19 @@ CREATE TABLE period(
 	PRIMARY KEY (Codigo)
 );
 
+CREATE TABLE period_aux(
+	Codigo VARCHAR(12) NOT NULL,
+    Mes VARCHAR(50) NOT NULL,
+    seq INT,
+	PRIMARY KEY (Codigo)
+);
+
 CREATE TABLE brands(
 	id_Value INT AUTO_INCREMENT NOT NULL,
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_value),
+    date_creation DATE,
 	fk_id_Value VARCHAR(12) NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES period (Codigo)
 );
@@ -53,6 +61,7 @@ CREATE TABLE models(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
+    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES brands (id_Value)
 );
@@ -62,33 +71,172 @@ CREATE TABLE years(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
+    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES brands (id_Value)
 );
 
--- Cadastrar anos relacionados a um modelo pelo modelo
+-- Cadastrar anos relacionados a um modelo
 CREATE TABLE modelYear(
 	id_Value INT AUTO_INCREMENT NOT NULL,
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
+    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES models (id_Value)
 );
 
--- Cadastrar anos relacionados a um modelo pelo ano
+-- Cadastrar modelos relacionados a um ano
 CREATE TABLE yearModel(
 	id_Value INT AUTO_INCREMENT NOT NULL,
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
+    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES years (id_Value)
 );
 
+CREATE TABLE insertPeriod(
+	id_insertPeriod INT AUTO_INCREMENT NOT NULL,
+    PRIMARY KEY (id_insertPeriod),
+    note VARCHAR(255),
+    date_creation DATETIME NOT NULL
+);
+
+CREATE TABLE insertBrand(
+	id_insertPeriod INT AUTO_INCREMENT NOT NULL,
+    PRIMARY KEY (id_insertPeriod),
+    note VARCHAR(255),
+    date_creation DATETIME NOT NULL
+);
+
+CREATE TABLE insertQuery(
+	id_insertPeriod INT AUTO_INCREMENT NOT NULL,
+    PRIMARY KEY (id_insertPeriod),
+    note VARCHAR(255),
+    date_creation DATETIME NOT NULL
+);
+
+DELIMITER $$
+	CREATE PROCEDURE brand(
+		IN Value VARCHAR(50),
+        IN period VARCHAR(50)
+	)
+    BEGIN
+		SELECT brands.id_Value FROM brands WHERE brands.Value = Value AND fk_id_Value = period;
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE model(
+		IN Value VARCHAR(50),
+        IN period VARCHAR(50)
+	)
+    BEGIN
+		SELECT models.id_Value FROM models WHERE models.Value = Value AND models.fk_id_Value = period;
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE year(
+		IN Value VARCHAR(50),
+        IN period VARCHAR(50)
+	)
+    BEGIN
+		SELECT years.id_Value FROM years WHERE years.Value = Value AND years.fk_id_Value = period;
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE FUNCTION selectPeriodLimit()
+	RETURNS INT
+    DETERMINISTIC
+    BEGIN
+		DECLARE 
+        lim INT;
+		SELECT Codigo INTO lim FROM period LIMIT 1;
+		RETURN lim;
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE FUNCTION verification()
+	RETURNS INT
+    DETERMINISTIC
+    BEGIN
+		DECLARE contP INT;
+        DECLARE contL INT;
+        DECLARE cont INT;
+        DECLARE newMes VARCHAR(50);
+        DECLARE newCodigo VARCHAR(12);
+        SELECT COUNT(*) INTO contP FROM period;
+        SELECT COUNT(*) INTO contL FROM period_aux;
+
+        IF(contL > contP) THEN 
+			SELECT Mes INTO newMes FROM period_aux WHERE seq = ContL;
+            SELECT Codigo INTO newCodigo FROM period_aux WHERE seq = ContL;
+            INSERT INTO period (Codigo, Mes, seq) VALUES (newCodigo, newMes, contP+1);
+			RETURN 1;
+        ELSE 
+			RETURN 0;
+        END IF;
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE FUNCTION insertPeriodWithEvent()
+	RETURNS INT
+    DETERMINISTIC
+    BEGIN
+		INSERT INTO insertPeriod (note, date_creation) VALUES ("Add period", NOW());
+        RETURN 0;
+    END $$
+DELIMITER ;
+    
+DELIMITER $$
+	CREATE TRIGGER afterInsertPeriod
+    AFTER INSERT ON period
+    FOR EACH ROW
+	BEGIN
+		DECLARE ret INT;
+		SET ret = (SELECT insertPeriodWithEvent());
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE TRIGGER afterInsertBrand
+    AFTER INSERT ON brand
+    FOR EACH ROW
+	BEGIN
+		DECLARE ret INT;
+		INSERT INTO insertBrand (note, date_creation) VALUES ("Add new brand", NOW());
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE TRIGGER afterInsertQuery
+    AFTER INSERT ON brand
+    FOR EACH ROW
+	BEGIN
+		DECLARE ret INT;
+		INSERT INTO insertQuery (note, date_creation) VALUES ("Add new query", NOW());
+    END $$
+DELIMITER ;
+
+CREATE EVENT verificationPeriod
+	ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 12 HOUR -- 1 MINUTE 
+	ON COMPLETION PRESERVE
+	DO SELECT verification();
+
 -- REVISADO
 /*
-DROP SCHEMA fipe_scraping;
+DROP SCHEMA scraping;
+DROP PROCEDURE brand;
+DROP PROCEDURE model;
+DROP PROCEDURE year;
+DROP FUNCTION selectPeriodLimit;
 DROP TABLE cod_vehicle_table;
 DROP TABLE query_table;
 DROP TABLE vehicle_table;
@@ -98,6 +246,13 @@ DROP TABLE years;
 DROP TABLE models;
 DROP TABLE brands;
 DROP TABLE period;
+DROP TABLE period_aux;
+DROP TABLE insertPeriod;
+DROP TABLE insertBrand;
+DROP TABLE insertQuery;
+DROP EVENT verificationPeriod;
+
+DELETE FROM period_aux;
 
 INSERT INTO vehicle_table(id_vehicle_table, brand, model, model_year) VALUES ("1", 'GM - Chevrolet','ONIX HATCH LT 1.4 8V FlexPower 5p Mec.', '2015 Gasolina');
 INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) VALUES ( "0940534" , 'outubro de 2022', 'wtktdjmyqmvt', 'sábado, 29 de outubro de 2022 12:38','R$ 46.247,00', "1");
@@ -117,59 +272,18 @@ SELECT * FROM cod_vehicle_table;
 SELECT * FROM period;
 SELECT * FROM brands;
 SELECT * FROM models;
-
-SELECT id_Value FROM years WHERE Value = '1992-1' AND fk_id_Value = '146';
-
 SELECT * FROM years;
 SELECT * FROM modelYear;
 SELECT * FROM yearModel;
+SELECT * FROM insertPeriod;
+SELECT * FROM insertBrand;
+SELECT * FROM insertQuery;
 SELECT Codigo FROM period LIMIT 1;
+
+-- Comando para liberar o event_scheduler
+SET GLOBAL event_scheduler = ON;
+
+--Comando para ver eventos no database
+SHOW EVENTS FROM scraping;
+SHOW TRIGGERS;
 */
-
--- REVISAR
-/*SELECT vehicle_table.brand, 
-	vehicle_table.model, 
-	vehicle_table.model_year, 
-	query_table.reference_month FROM vehicle_table 
-	INNER JOIN query_table ON query_table.id_vehicle_table = vehicle_table.id_vehicle_table
-	WHERE brand = "GM - Chevrolet" 
-	AND model = "ONIX HATCH Joy 1.0 8V Flex 5p Mec." 
-    AND model_year = "2019 Gasolina" AND query_table.reference_month = "outubro de 2022";
-
-create view join_tables as select id_vehicle_table, brand, model, model_year from vehicle_table;
-select * from join_tablessss;
-
-create view join_tables7 
-as select brand, model, model_year, reference_month, average_price 
-from vehicle_table 
-inner join query_table 
-on vehicle_table.id_vehicle_table = query_table.id_vehicle_table;
-select * from join_tables7;
-
--- create trigger ----------------------------------------------------------------------------------------------------------------------
-
-DELIMITER //
-CREATE TRIGGER nome_da_trigger AFTER/BEFORE INSERT/UPDATE/DELETE ON nome_da_tabela
-FOR EACH ROW
-BEGIN
--- escrever a query
-END //
-DELIMITER ;
-
--- create function ----------------------------------------------------------------------------------------------------------------------
-
-
--- TESTANDO A CRIAÇAO DE UM GATILHO QUE ACIONA UMA FUNÇAO (TERMINAR)
-DELIMITER $$
-
-CREATE TRIGGER put_id
-	AFTER INSERT ON vehicle_table
-	FOR EACH ROW
-	BEGIN
-    
-		insert into query_table(fipe_code, reference_month, authentication, consultation_date ,average_price, id_query_table)
-		values (OLD.fipe_code, OLD.reference_month, OLD.authentication, OLD.consultation_date, OLD.average_price, OLD.id_query_table);
-
-	END$$
-    
-DELIMITER ;*/
