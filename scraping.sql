@@ -51,7 +51,6 @@ CREATE TABLE brands(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_value),
-    date_creation DATE,
 	fk_id_Value VARCHAR(12) NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES period (Codigo)
 );
@@ -61,7 +60,6 @@ CREATE TABLE models(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
-    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES brands (id_Value)
 );
@@ -71,7 +69,6 @@ CREATE TABLE years(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
-    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES brands (id_Value)
 );
@@ -82,7 +79,6 @@ CREATE TABLE modelYear(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
-    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES models (id_Value)
 );
@@ -93,7 +89,6 @@ CREATE TABLE yearModel(
 	Value VARCHAR(12) NOT NULL,
     Label VARCHAR(50) NOT NULL,
 	PRIMARY KEY (id_Value),
-    date_creation DATE,
 	fk_id_Value INT NOT NULL,
 	FOREIGN KEY (fk_id_Value) REFERENCES years (id_Value)
 );
@@ -207,20 +202,18 @@ DELIMITER ;
 
 DELIMITER $$
 	CREATE TRIGGER afterInsertBrand
-    AFTER INSERT ON brand
+    AFTER INSERT ON brands
     FOR EACH ROW
 	BEGIN
-		DECLARE ret INT;
 		INSERT INTO insertBrand (note, date_creation) VALUES ("Add new brand", NOW());
     END $$
 DELIMITER ;
 
 DELIMITER $$
 	CREATE TRIGGER afterInsertQuery
-    AFTER INSERT ON brand
+    AFTER INSERT ON vehicle_table
     FOR EACH ROW
 	BEGIN
-		DECLARE ret INT;
 		INSERT INTO insertQuery (note, date_creation) VALUES ("Add new query", NOW());
     END $$
 DELIMITER ;
@@ -229,6 +222,85 @@ CREATE EVENT verificationPeriod
 	ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 12 HOUR -- 1 MINUTE 
 	ON COMPLETION PRESERVE
 	DO SELECT verification();
+
+-- Mais caro no nosso banco
+CREATE VIEW mostExpensiveCarInDatabase AS
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    ORDER BY average_price DESC LIMIT 1;
+
+-- Mais barato no nosso banco    
+CREATE VIEW cheapestCarInDatabase AS
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    ORDER BY average_price ASC LIMIT 1;
+
+-- Menos potente   
+CREATE VIEW lessPowerfulCar AS
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    WHERE cod_vehicle_table.cod_brand = "147" 
+    AND cod_vehicle_table.cod_model = "4639" 
+    AND cod_vehicle_table.cod_model_year = "2012-1" 
+    AND cod_vehicle_table.cod_reference_month = "291";
+
+-- Mais econômico
+CREATE VIEW moreEconomical AS
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    WHERE cod_vehicle_table.cod_brand = "7" 
+    AND cod_vehicle_table.cod_model = "7024" 
+    AND cod_vehicle_table.cod_model_year = "2021-1" 
+    AND cod_vehicle_table.cod_reference_month = "291";
+    
+-- Menos econômico
+CREATE VIEW lessEconomical AS
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	FROM vehicle_table 
+    INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    WHERE cod_vehicle_table.cod_brand = "39" 
+    AND cod_vehicle_table.cod_model = "7770" 
+    AND cod_vehicle_table.cod_model_year = "2016-1" 
+    AND cod_vehicle_table.cod_reference_month = "291";
+    
+-- Insert less powerful car - Menos potente - https://www.carrosnaweb.com.br/fichadetalhe.asp?codigo=14639
+INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
+	VALUES ("jsykouidr7", "	Gurgel", "BR-800 (todos)/Supermini", "1989 Gasolina");
+    
+INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
+	VALUES ("045003-0", "novembro de 2022", "19dwzmcmcxp", "quinta-feira, 24 de novembro de 2022 20:22", "R$ 6.073,00", "jsykouidr7");     
+    
+INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
+	VALUES ("24", "1238", "1989-1", "291", "jsykouidr7");
+    
+-- Insert more economical car - Mais econômico - https://www.carrosnaweb.com.br/fichadetalhe.asp?codigo=16395
+INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
+	VALUES ("7ptvkglc75", "BMW", "i3 Rex E Drive Full 170cv Aut.(Elétrico)", "2021 Gasolina");
+    
+INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
+	VALUES ("009195-2", "novembro de 2022", "njp7ljs1kldjf", "quinta-feira, 24 de novembro de 2022 20:08", "R$ 269.841,00", "7ptvkglc75");     
+    
+INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
+	VALUES ("7", "7024", "2021-1", "291", "7ptvkglc75");
+    
+-- Insert less economical car - Menos econômico - https://www.carrosnaweb.com.br/fichadetalhe.asp?codigo=6829
+INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
+	VALUES ("2ptvkglc75", "Mercedes-Benz", "S-65 L AMG 6.0 V12 630cv Aut.", "2016 Gasolina");
+    
+INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
+	VALUES ("021359-4", "novembro de 2022", "7dm5r92pmmcz9", "quinta-feira, 24 de novembro de 2022 21:02", "R$ 742.286,00", "2ptvkglc75");     
+    
+INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
+	VALUES ("39", "7770", "2016-1", "291", "2ptvkglc75");
 
 -- REVISADO
 /*
@@ -254,6 +326,7 @@ DROP EVENT verificationPeriod;
 
 DELETE FROM period_aux;
 
+-- Insert para testes
 INSERT INTO vehicle_table(id_vehicle_table, brand, model, model_year) VALUES ("1", 'GM - Chevrolet','ONIX HATCH LT 1.4 8V FlexPower 5p Mec.', '2015 Gasolina');
 INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) VALUES ( "0940534" , 'outubro de 2022', 'wtktdjmyqmvt', 'sábado, 29 de outubro de 2022 12:38','R$ 46.247,00', "1");
 INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table) VALUES ("23", "7691", "2019-1", "290", "1");
