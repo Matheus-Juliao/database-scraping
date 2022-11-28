@@ -353,9 +353,9 @@ SELECT * FROM insertPeriod;
 SELECT * FROM insertBrand;
 SELECT * FROM insertQuery;
 SELECT Codigo FROM period LIMIT 1;
-SELECT reference_month, fipe_code, brand, model, model_year, authentication, average_price FROM vehicle_table 
-	JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
-    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table;
+SELECT id_vehicle_table, reference_month, fipe_code, brand, model, model_year, authentication, average_price FROM vehicle_table 
+    INNER JOIN query_table ON fk_id_vehicle_table = id_vehicle_table
+    WHERE id_vehicle_table = fk_id_vehicle_table;
     
 -- Comando para liberar o event_scheduler
 SET GLOBAL event_scheduler = ON;
