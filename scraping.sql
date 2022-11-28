@@ -14,8 +14,7 @@ CREATE TABLE query_table(
 	fipe_code VARCHAR(50),
 	reference_month VARCHAR(50),
 	authentication TEXT,
-	consultation_date VARCHAR(50),
-	average_price VARCHAR (20),
+	average_price DECIMAL(15, 2),
 	fk_id_vehicle_table VARCHAR(12) NOT NULL,
 	PRIMARY KEY (id_query_table),
 	FOREIGN KEY (fk_id_vehicle_table) REFERENCES vehicle_table (id_vehicle_table)
@@ -225,34 +224,36 @@ CREATE EVENT verificationPeriod
 
 -- Mais caro no nosso banco
 CREATE VIEW mostExpensiveCarInDatabase AS
-	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, MAX(average_price) AS average_price
 	FROM vehicle_table 
     INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
     INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
-    ORDER BY average_price DESC LIMIT 1;
+    GROUP BY reference_month, fipe_code, brand, model, model_year, authentication
+    ORDER BY 7 DESC LIMIT 1;
 
 -- Mais barato no nosso banco    
 CREATE VIEW cheapestCarInDatabase AS
-	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, MIN(average_price) AS average_price
 	FROM vehicle_table 
     INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
     INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
-    ORDER BY average_price ASC LIMIT 1;
+    GROUP BY reference_month, fipe_code, brand, model, model_year, authentication
+    ORDER BY 7 ASC LIMIT 1;
 
 -- Menos potente   
 CREATE VIEW lessPowerfulCar AS
-	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, average_price 
 	FROM vehicle_table 
     INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
     INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
-    WHERE cod_vehicle_table.cod_brand = "147" 
-    AND cod_vehicle_table.cod_model = "4639" 
-    AND cod_vehicle_table.cod_model_year = "2012-1" 
+    WHERE cod_vehicle_table.cod_brand = "24" 
+    AND cod_vehicle_table.cod_model = "1238" 
+    AND cod_vehicle_table.cod_model_year = "1989-1" 
     AND cod_vehicle_table.cod_reference_month = "291";
 
 -- Mais econômico
 CREATE VIEW moreEconomical AS
-	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, average_price 
 	FROM vehicle_table 
     INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
     INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
@@ -263,7 +264,7 @@ CREATE VIEW moreEconomical AS
     
 -- Menos econômico
 CREATE VIEW lessEconomical AS
-	SELECT reference_month, fipe_code, brand, model, model_year, authentication, consultation_date, average_price 
+	SELECT reference_month, fipe_code, brand, model, model_year, authentication, average_price 
 	FROM vehicle_table 
     INNER JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
     INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
@@ -276,8 +277,8 @@ CREATE VIEW lessEconomical AS
 INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
 	VALUES ("jsykouidr7", "	Gurgel", "BR-800 (todos)/Supermini", "1989 Gasolina");
     
-INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
-	VALUES ("045003-0", "novembro de 2022", "19dwzmcmcxp", "quinta-feira, 24 de novembro de 2022 20:22", "R$ 6.073,00", "jsykouidr7");     
+INSERT INTO query_table (fipe_code, reference_month, authentication, average_price, fk_id_vehicle_table) 
+	VALUES ("045003-0", "novembro de 2022", "19dwzmcmcxp", 6073.00, "jsykouidr7");     
     
 INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
 	VALUES ("24", "1238", "1989-1", "291", "jsykouidr7");
@@ -286,8 +287,8 @@ INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_referen
 INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
 	VALUES ("7ptvkglc75", "BMW", "i3 Rex E Drive Full 170cv Aut.(Elétrico)", "2021 Gasolina");
     
-INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
-	VALUES ("009195-2", "novembro de 2022", "njp7ljs1kldjf", "quinta-feira, 24 de novembro de 2022 20:08", "R$ 269.841,00", "7ptvkglc75");     
+INSERT INTO query_table (fipe_code, reference_month, authentication, average_price, fk_id_vehicle_table) 
+	VALUES ("009195-2", "novembro de 2022", "njp7ljs1kldjf", 269841.00, "7ptvkglc75");     
     
 INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
 	VALUES ("7", "7024", "2021-1", "291", "7ptvkglc75");
@@ -296,8 +297,8 @@ INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_referen
 INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
 	VALUES ("2ptvkglc75", "Mercedes-Benz", "S-65 L AMG 6.0 V12 630cv Aut.", "2016 Gasolina");
     
-INSERT INTO query_table (fipe_code, reference_month, authentication, consultation_date, average_price, fk_id_vehicle_table) 
-	VALUES ("021359-4", "novembro de 2022", "7dm5r92pmmcz9", "quinta-feira, 24 de novembro de 2022 21:02", "R$ 742.286,00", "2ptvkglc75");     
+INSERT INTO query_table (fipe_code, reference_month, authentication, average_price, fk_id_vehicle_table) 
+	VALUES ("021359-4", "novembro de 2022", "7dm5r92pmmcz9", 742286.00, "2ptvkglc75");     
     
 INSERT INTO cod_vehicle_table (cod_brand, cod_model, cod_model_year, cod_reference_month, fk_id_vehicle_table)
 	VALUES ("39", "7770", "2016-1", "291", "2ptvkglc75");
@@ -352,7 +353,10 @@ SELECT * FROM insertPeriod;
 SELECT * FROM insertBrand;
 SELECT * FROM insertQuery;
 SELECT Codigo FROM period LIMIT 1;
-
+SELECT reference_month, fipe_code, brand, model, model_year, authentication, average_price FROM vehicle_table 
+	JOIN cod_vehicle_table ON cod_vehicle_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table 
+    INNER JOIN query_table ON query_table.fk_id_vehicle_table = vehicle_table.id_vehicle_table;
+    
 -- Comando para liberar o event_scheduler
 SET GLOBAL event_scheduler = ON;
 
