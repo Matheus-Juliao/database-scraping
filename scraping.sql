@@ -275,7 +275,7 @@ CREATE VIEW lessEconomical AS
     
 -- Insert less powerful car - Menos potente - https://www.carrosnaweb.com.br/fichadetalhe.asp?codigo=14639
 INSERT INTO vehicle_table (id_vehicle_table, brand, model, model_year) 
-	VALUES ("jsykouidr7", "	Gurgel", "BR-800 (todos)/Supermini", "1989 Gasolina");
+	VALUES ("jsykouidr7", "Gurgel", "BR-800 (todos)/Supermini", "1989 Gasolina");
     
 INSERT INTO query_table (fipe_code, reference_month, authentication, average_price, fk_id_vehicle_table) 
 	VALUES ("045003-0", "novembro de 2022", "19dwzmcmcxp", 6073.00, "jsykouidr7");     
